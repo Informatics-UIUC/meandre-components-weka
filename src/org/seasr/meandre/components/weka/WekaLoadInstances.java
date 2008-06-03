@@ -1,3 +1,43 @@
+/**
+ * University of Illinois/NCSA
+ * Open Source License
+ *
+ * Copyright © 2008, NCSA.  All rights reserved.
+ * 
+ * Developed by:
+ * The Automated Learning Group
+ * University of Illinois at Urbana-Champaign
+ * http://www.seasr.org
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal with the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * 
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimers.
+ * 
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimers in
+ * the documentation and/or other materials provided with the distribution.
+ * 
+ * Neither the names of The Automated Learning Group, University of
+ * Illinois at Urbana-Champaign, nor the names of its contributors may
+ * be used to endorse or promote products derived from this Software
+ * without specific prior written permission.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+ */
+
 package org.seasr.meandre.components.weka;
 
 import java.io.File;
@@ -8,6 +48,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import org.meandre.core.ComponentContext;
 import org.meandre.core.ComponentContextException;
@@ -23,40 +64,68 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import org.meandre.core.ComponentContextProperties;
 
-/** This component takes a filename as input and
- *  loads it into the Weka instances object.
+/** 
+ * <p>
+ * Title: WekaLoadInstances
+ * </p>
+ * 
+ * <p>
+ * Description:  This component takes a filename/URL as input and outputs it 
+ * as a Weka Instances object.
+ * </p>
+ * 
+ *  <p>
+ * Copyright: Copyright (c) 2008
+ * </p>
  *
  * @author Loretta Auvil
  * @author Boris Capitanu
+ * @author Mary Pietrowicz
  */
 
-@Component(
-		creator = "Loretta Auvil",
-		description = "This component takes a filename as input " +
-					  "and loads it into the Weka instances object.",
-		name = "WekaLoadInstances",
-		tags = "weka")
 
+@Component(
+		name="WekaLoadInstances",
+		tags="weka instances",
+		creator="Loretta Auvil",
+		description="This component takes a filename as input and "+
+		            "loads it into the Weka instances object."
+		)
 public class WekaLoadInstances implements ExecutableComponent {
 
-	@ComponentInput(description = "Input URL", name = "inputURL")
+	@ComponentInput(
+	description = "Input URL to the object containing the instance data.", 
+	name = "inputURL")
 	public final static String DATA_INPUT_INPUTURL = "inputURL";
 
-	@ComponentOutput(description = "Weka instances", name = "instances")
+	@ComponentOutput(
+	description = "Weka instances object.", 
+	name = "instances")
 	public final static String DATA_OUTPUT_INSTANCES = "instances";
 
-	@ComponentProperty(description = "Print instances? (Y/N)",
-			name = "printInstances", defaultValue = "N")
+	@ComponentProperty(
+	description = "Print instances? (Y/N)",
+	name = "printInstances", 
+	defaultValue = "N")
 	public final static String DATA_PROPERTY_PRINTINSTANCES = "printInstances";
 
-    /** This method is called when the Meandre Flow execution is completed.
-    *
-    */
-	public void initialize(ComponentContextProperties ccp) {
-
+	/* The logger object to use for output. */
+	private static Logger logger = null;
+	
+ 
+	/** 
+	 * This method is called when the Meandre Flow execution begins.
+     **/	
+	public void initialize(ComponentContextProperties ccp) 
+	{
+		logger = ccp.getLogger();
+		logger.info("Initializing WekaEMBuildClusterer...");
 	}
 
-    /** This method is called when the Meandre Flow executes the component.
+    /** 
+    * This method is called when the Meandre Flow executes the component.
+    * It reads in instance data from a source, creates a Weka instances
+    * object, and outputs the instances.
     *
     * @param  context The component execution context
     * @throws ComponentExecutionException If a fatal condition arises during
@@ -83,8 +152,9 @@ public class WekaLoadInstances implements ExecutableComponent {
 
 		// Check if the URL references a CSV file
 		if (url != null) {
-			if (inputURL.toLowerCase().endsWith(".csv")) {
-				System.out.println("WekaLoadInstances: Detected a URL CSV file");
+			if (inputURL.toLowerCase().endsWith(".csv")) 
+			{
+				logger.info("WekaLoadInstances: Detected a URL CSV file");
 
 				// Get the file name referenced by the URL
 		    	String fileName = null;
@@ -101,12 +171,13 @@ public class WekaLoadInstances implements ExecutableComponent {
 
 		    		outStream = new FileOutputStream(localTempFile);
 		    	}
-		    	catch (IOException e) {
-		    		System.out.println("WekaLoadInstances: Cannot create temporary file!");
+		    	catch (IOException e) 
+		    	{
+		    		logger.severe("WekaLoadInstances:  Cannot create temporaru file. "+e.getMessage());
 		    		e.printStackTrace();
 		    	}
 
-	    		System.out.println("WekaLoadInstances: Copying data from '" + inputURL +
+		    	logger.info("WekaLoadInstances: Copying data from '" + inputURL +
 	    				"' to '" + localTempFile.getAbsolutePath() + "'");
 
 	    	   	// Copy the URL stream to the output stream
@@ -128,8 +199,7 @@ public class WekaLoadInstances implements ExecutableComponent {
 
 			if (printInstances) {
 				// Print header and instances.
-				System.out.println("\nDataset:\n");
-				System.out.println(instances);
+				logger.info("\nDataset:\n"+instances);
 			}
 
 			context.pushDataComponentToOutput(DATA_OUTPUT_INSTANCES, instances);
@@ -153,9 +223,9 @@ public class WekaLoadInstances implements ExecutableComponent {
     		while ((len = urlStream.read(buffer)) > 0)
     			outStream.write(buffer, 0, len);
     	}
-    	catch (IOException e) {
-    		System.out.println("WekaLoadInstances: Cannot copy data from URL!");
-    		e.printStackTrace();
+    	catch (IOException e) 
+    	{
+    		logger.severe("WekaLoadInstances: Cannot copy data from URL! \n"+e.getMessage());
     	}
     	finally {
     		try {
@@ -166,12 +236,12 @@ public class WekaLoadInstances implements ExecutableComponent {
     	}
 	}
 
-	/** This method is invoked when the Meandre Flow is being prepared for
-     * getting run.
-     *
-     */
-	public void dispose(ComponentContextProperties ccp) {
-
+	/** 
+	 * This method is invoked when the Meandre Flow execution ends.
+     **/
+	public void dispose(ComponentContextProperties ccp) 
+	{
+	   logger.info("Disposing WekaEMBuildClusterer...");
 	}
 }
 
