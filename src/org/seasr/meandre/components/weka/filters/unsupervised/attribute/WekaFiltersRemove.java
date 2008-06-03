@@ -1,3 +1,43 @@
+/**
+ * University of Illinois/NCSA
+ * Open Source License
+ *
+ * Copyright © 2008, NCSA.  All rights reserved.
+ * 
+ * Developed by:
+ * The Automated Learning Group
+ * University of Illinois at Urbana-Champaign
+ * http://www.seasr.org
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal with the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * 
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimers.
+ * 
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimers in
+ * the documentation and/or other materials provided with the distribution.
+ * 
+ * Neither the names of The Automated Learning Group, University of
+ * Illinois at Urbana-Champaign, nor the names of its contributors may
+ * be used to endorse or promote products derived from this Software
+ * without specific prior written permission.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+ */
+
 package org.seasr.meandre.components.weka.filters.unsupervised.attribute;
 
 
@@ -14,32 +54,75 @@ import org.seasr.meandre.components.weka.WekaConstants;
 
 import weka.core.Instances;
 import weka.filters.Filter;
-//import weka.filters.unsupervised.attribute.Remove;
 
-@Component(creator="Mary Pietrowicz", description="Filters out unwanted attributes from instances",
-		tags="weka filter remove", name="WekaFiltersRemove")
+import java.util.logging.Logger;
+
+/**
+ * 
+ * <p>
+ * Title: WekaFiltersRemove
+ * </p>
+ * 
+ * <p>
+ * Description: Filters out a range of attributes in a dataset. Ranges may be
+ *              specified as a comma-separated list of attribute indices.  An
+ *              inclusive range is specified with a "-", and "first" and "last"
+ *              indicate the first and last attributes, respectively.  
+ *              Example:  first-4,6,8-10,last
+ *             
+ * </p>
+ * 
+ * <p>
+ * Copyright: Copyright (c) 2008
+ * </p>
+ * 
+ * <p>
+ * Company: Automated Learning Group, NCSA
+ * </p>
+ * 
+ * @author Mary Pietrowicz
+ * @version 1.0
+ */
+
+@Component(
+		name="WekaFiltersRemove",
+		tags="weka filter remove",
+		creator="Mary Pietrowicz",
+		description="Filters out unwanted attributes from a dataset."
+		)
 public class WekaFiltersRemove implements ExecutableComponent
 {
 	//INPUT
-	@ComponentInput(description="Data instances", name=WekaConstants.INSTANCES)
+	@ComponentInput(
+	description="The data instances.", 
+	name=WekaConstants.INSTANCES)
 	final String DATA_INPUT_1 = WekaConstants.INSTANCES;
 
 	//PROPERTY
-	@ComponentProperty(description = "Verbose output? (Y/N)",
-			name = "verbose", defaultValue = "N")
+	@ComponentProperty(
+	description = "Verbose output? (Y/N)",
+	name = "verbose", 
+	defaultValue = "N")
 	final static String PROPERTY1 = WekaConstants.VERBOSE;
 
-	@ComponentProperty(description="List of attributes to ignore, e.g., first,-3, 5, 6-last",
-		    name="attr_list", defaultValue=WekaConstants.NONE)
+	@ComponentProperty(
+	description="List of attributes to ignore, e.g., first,-3, 5, 6-last",
+    name="attr_list", 
+    defaultValue=WekaConstants.NONE)
     final static String PROPERTY2 = WekaConstants.ATTR_LIST;
 
 	//OUTPUT
-	@ComponentOutput(description="The revised instance set", name=WekaConstants.FILTERED_INSTANCES)
+	@ComponentOutput(
+	description="The revised instance set with attributes filtered out.", 
+	name=WekaConstants.FILTERED_INSTANCES)
 	final String DATA_OUTPUT_1=WekaConstants.FILTERED_INSTANCES;
 
+	/* The logger object to use for output. */
+	private static Logger logger = null;
+	
 	public void dispose(ComponentContextProperties ccp)
 	{
-	   System.out.println("Disposing Remove...");
+	   logger.info("Disposing WekaFiltersRemove...");
 	}
 
 	/*
@@ -65,7 +148,7 @@ public class WekaFiltersRemove implements ExecutableComponent
 	public void execute(ComponentContext cc)
 	throws ComponentExecutionException, ComponentContextException
 	{
-		System.out.println("Firing Remove...");
+		logger.info("Firing WekaFiltersRemove...");
 		try
 		{
 			Instances instances = (Instances)(cc.getDataComponentFromInput(WekaConstants.INSTANCES));
@@ -76,15 +159,14 @@ public class WekaFiltersRemove implements ExecutableComponent
 			String verbose = cc.getProperty(PROPERTY1);
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("Original Instances: ");
-				System.out.println(instances);
+				logger.info("Original Instances: "+instances);
 			}
 
 			String attr_list = cc.getProperty(PROPERTY2);
 
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("attr_list: "+attr_list);
+				logger.info("attr_list: "+attr_list);
 			}
 
 			weka.filters.unsupervised.attribute.Remove remove_filter =
@@ -99,35 +181,34 @@ public class WekaFiltersRemove implements ExecutableComponent
 	        remove_filter.setInputFormat(instances);
 	        // END WARNING
 	      
-	        String[] filter_opts = remove_filter.getOptions();
-	        System.out.println(filter_opts[0]);
-	        System.out.println("getAttributeIndices returns: "+remove_filter.getAttributeIndices());
-
+	        // String[] filter_opts = remove_filter.getOptions();
+	        
 			filtered_instances = Filter.useFilter(instances, remove_filter);
 
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("Filtered Instances: ");
-				System.out.println(filtered_instances);
+				logger.info("Removed indices: "+remove_filter.getAttributeIndices());
+				logger.info("Filtered Instances: "+filtered_instances);
 			}
 
 			cc.pushDataComponentToOutput(DATA_OUTPUT_1, filtered_instances);
 		}
 		catch (ComponentContextException ex1)
 		{
-			ex1.printStackTrace();
+			logger.severe("ComponentContextException in WekaFiltersRemove: "+ex1.getMessage());
 			throw new ComponentContextException("Error in WekaFiltersRemove: "+ex1.getMessage());
 		}
 		catch (Throwable th)
 		{
 			// Classify everything else as ComponentExecutionException
-			th.printStackTrace();
+			logger.severe("ComponentExecutionException in WekaFiltersRemove: "+th.getMessage());
 			throw new ComponentExecutionException("Error in WekaFiltersRemove: "+th.getMessage());
 		}
 	}
 
 	public void initialize(ComponentContextProperties ccp)
 	{
-		System.out.println("Initializing Remove...");
+		logger = ccp.getLogger();
+		logger.info("Initializing WekaFiltersRemove...");
 	}
 }

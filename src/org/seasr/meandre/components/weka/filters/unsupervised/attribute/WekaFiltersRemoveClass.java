@@ -80,7 +80,7 @@ import java.util.logging.Logger;
  */
 
 @Component(
-		name="WekaFiltersRemoveclass",
+		name="WekaFiltersRemoveClass",
 		tags="weka filter remove",
 		creator="Mary Pietrowicz",
 		description="Filters out a class attribute from an instances set; useful for clustering."
