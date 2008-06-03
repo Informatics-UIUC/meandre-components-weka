@@ -227,20 +227,12 @@ public class WekaEMBuildClusterer implements ExecutableComponent
 		}
 		catch (ComponentContextException ex1)
 		{
-			if (debug == true)
-			{
-			  ex1.printStackTrace();
-			}
 			logger.severe("Error in WekaEMBuildClusterer: "+ex1.getMessage());
 			throw new ComponentContextException("Error in WekaEMBuildClusterer: "+ex1.getMessage());
 		}
 		catch (Throwable th)
 		{
 			// Classify everything else as ComponentExecutionException
-			if (debug == true)
-			{
-			  th.printStackTrace();
-			}
 			logger.severe("Error in WekaEMBuildClusterer: "+th.getMessage());
 			throw new ComponentExecutionException("Error in WekaEMBuildClusterer: "+th.getMessage());
 		}
