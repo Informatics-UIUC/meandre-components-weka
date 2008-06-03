@@ -1,3 +1,43 @@
+/**
+ * University of Illinois/NCSA
+ * Open Source License
+ *
+ * Copyright © 2008, NCSA.  All rights reserved.
+ * 
+ * Developed by:
+ * The Automated Learning Group
+ * University of Illinois at Urbana-Champaign
+ * http://www.seasr.org
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal with the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * 
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimers.
+ * 
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimers in
+ * the documentation and/or other materials provided with the distribution.
+ * 
+ * Neither the names of The Automated Learning Group, University of
+ * Illinois at Urbana-Champaign, nor the names of its contributors may
+ * be used to endorse or promote products derived from this Software
+ * without specific prior written permission.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+ */
+
 package org.seasr.meandre.components.weka.filters.unsupervised.attribute;
 
 import org.meandre.core.ComponentContext;
@@ -14,26 +54,64 @@ import org.seasr.meandre.components.weka.WekaConstants;
 import weka.core.Instances;
 import weka.filters.Filter;
 
-@Component(creator="Mary Pietrowicz", description="Filters out a class attribute, useful for clustering algs",
-		tags="weka filter remove", name="WekaFiltersRemoveClass")
+import java.util.logging.Logger;
+
+/**
+ * 
+ * <p>
+ * Title: WekaFiltersRemoveClass
+ * </p>
+ * 
+ * <p>
+ * Description: Filters out a class attribute from a set of instances. This is useful
+ *              for algorithms which do not accept class attributes.
+ * </p>
+ * 
+ * <p>
+ * Copyright: Copyright (c) 2008
+ * </p>
+ * 
+ * <p>
+ * Company: Automated Learning Group, NCSA
+ * </p>
+ * 
+ * @author Mary Pietrowicz
+ * @version 1.0
+ */
+
+@Component(
+		name="WekaFiltersRemoveclass",
+		tags="weka filter remove",
+		creator="Mary Pietrowicz",
+		description="Filters out a class attribute from an instances set; useful for clustering."
+		)
 public class WekaFiltersRemoveClass implements ExecutableComponent
 {
 	//INPUT
-	@ComponentInput(description="Data instances", name=WekaConstants.INSTANCES)
+	@ComponentInput(
+	description="Data instances", 
+	name=WekaConstants.INSTANCES)
 	final String DATA_INPUT_1 = WekaConstants.INSTANCES;
 
 	//PROPERTY
-	@ComponentProperty(description = "Verbose output? (Y/N)",
-			name = "verbose", defaultValue = "N")
+	@ComponentProperty(
+	description = "Verbose output? (Y/N)",
+	name = "verbose", 
+	defaultValue = "N")
 	final static String PROPERTY1 = WekaConstants.VERBOSE;
 
 	//OUTPUT
-	@ComponentOutput(description="The revised instance set", name=WekaConstants.FILTERED_INSTANCES)
+	@ComponentOutput(
+	description="The revised instance set with class attribute removed", 
+	name=WekaConstants.FILTERED_INSTANCES)
 	final String DATA_OUTPUT_1=WekaConstants.FILTERED_INSTANCES;
 
+	/* The logger object to use for output. */
+	private static Logger logger = null;
+	
 	public void dispose(ComponentContextProperties ccp)
 	{
-	   System.out.println("Disposing WekaFiltersRemoveClass...");
+	   logger.info("Disposing WekaFiltersRemoveClass...");
 	}
 
 	/*
@@ -58,7 +136,7 @@ public class WekaFiltersRemoveClass implements ExecutableComponent
 	public void execute(ComponentContext cc)
 	throws ComponentExecutionException, ComponentContextException
 	{
-		System.out.println("Firing WekaFiltersRemoveClass...");
+		logger.info("Firing WekaFiltersRemoveClass...");
 		try
 		{
 			Instances instances = (Instances)(cc.getDataComponentFromInput(WekaConstants.INSTANCES));
@@ -69,8 +147,7 @@ public class WekaFiltersRemoveClass implements ExecutableComponent
 			String verbose = cc.getProperty(PROPERTY1);
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("Original Instances: ");
-				System.out.println(instances);
+				logger.info("Original Instances: \n"+instances);
 			}
 
 
@@ -78,7 +155,7 @@ public class WekaFiltersRemoveClass implements ExecutableComponent
 	            	new weka.filters.unsupervised.attribute.Remove();
 
 			int class_index = instances.classIndex()+1;
-			System.out.println("Class index is: "+class_index);
+			logger.info("Class index is: "+class_index);
             remove_filter.setAttributeIndices(""+class_index);
 	        remove_filter.setInvertSelection(false);
 	        remove_filter.setInputFormat(instances);
@@ -87,28 +164,28 @@ public class WekaFiltersRemoveClass implements ExecutableComponent
 
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("Filtered Instances: ");
-				System.out.println(filtered_instances);
+				logger.info("Filtered Instances: \n"+filtered_instances);
 			}
 
 			cc.pushDataComponentToOutput(DATA_OUTPUT_1, filtered_instances);
 		}
 		catch (ComponentContextException ex1)
 		{
-			ex1.printStackTrace();
+			logger.severe("Error in WekaFiltersRemoveClass: +ex1.getMessage()");
 			throw new ComponentContextException("Error in WekaFiltersRemoveClass: "+ex1.getMessage());
 		}
 		catch (Throwable th)
 		{
 			// Classify everything else as ComponentExecutionException
-			th.printStackTrace();
+			logger.severe("Error in WekaFiltersRemoveClass: "+th.getMessage());
 			throw new ComponentExecutionException("Error in WekaFiltersRemoveClass: "+th.getMessage());
 		}
 	}
 
 	public void initialize(ComponentContextProperties ccp)
 	{
-		System.out.println("Initializing WekaFiltersRemoveClass...");
+		logger = ccp.getLogger();
+		logger.info("Initializing WekaFiltersRemoveClass...");
 	}
 }
 
