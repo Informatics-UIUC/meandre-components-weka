@@ -1,3 +1,43 @@
+/**
+ * University of Illinois/NCSA
+ * Open Source License
+ *
+ * Copyright © 2008, NCSA.  All rights reserved.
+ * 
+ * Developed by:
+ * The Automated Learning Group
+ * University of Illinois at Urbana-Champaign
+ * http://www.seasr.org
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal with the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * 
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimers.
+ * 
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimers in
+ * the documentation and/or other materials provided with the distribution.
+ * 
+ * Neither the names of The Automated Learning Group, University of
+ * Illinois at Urbana-Champaign, nor the names of its contributors may
+ * be used to endorse or promote products derived from this Software
+ * without specific prior written permission.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+ */
+
 package org.seasr.meandre.components.weka.clusterers.EM;
 
 import org.meandre.core.ComponentContext;
@@ -12,47 +52,95 @@ import org.meandre.core.ComponentContextProperties;
 
 import weka.core.Instances;
 import weka.clusterers.EM;
-import weka.clusterers.ClusterEvaluation;
+
+import java.util.logging.Logger;
 
 import org.seasr.meandre.components.weka.WekaConstants;
 
-@Component(creator="Mary Pietrowicz", description="Builds Weka EM Model",
-		tags="weka EM model cluster", name="WekaEMBuildClusterer")
+/**
+ * 
+ * <p>
+ * Title: WekaEMBuildClusterer
+ * </p>
+ * 
+ * <p>
+ * Description: A component which creates an EM cluster model.
+ * </p>
+ * 
+ * <p>
+ * Copyright: Copyright (c) 2008
+ * </p>
+ * 
+ * <p>
+ * Company: Automated Learning Group, NCSA
+ * </p>
+ * 
+ * @author Mary Pietrowicz
+ * @version 1.0
+ */
+
+@Component(
+name="WekaEMBuildClusterer",
+tags="weka EM model cluster",
+creator="Mary Pietrowicz",
+description="Builds a Weka EM Model."
+)
 public class WekaEMBuildClusterer implements ExecutableComponent
 {
 	//INPUT
-	@ComponentInput(description="The training instances", name=WekaConstants.INSTANCES)
+	@ComponentInput(
+	description="The training instances loaded from a valid data file."+
+	"Note that this algorithm does not accept class attributes.", 
+	name=WekaConstants.INSTANCES)
 	final String DATA_INPUT_1 = WekaConstants.INSTANCES;
 
 	//PROPERTY
-	@ComponentProperty(description = "Debug output? (Y/N)",
-			name = "debug", defaultValue = "N")
+	@ComponentProperty(
+	description = "Debug output? (Y/N)",
+	name = "debug", 
+	defaultValue = "N")
 	final static String PROPERTY1 = WekaConstants.DEBUG;
 
-	@ComponentProperty(description="Number of clusters",
-			name = "num_clusters", defaultValue = WekaConstants.USE_CROSS_VALIDATION)
+	@ComponentProperty(
+	description="Number of clusters, -1 if cross validation is to be used.",
+	name = "num_clusters", 
+	defaultValue = WekaConstants.USE_CROSS_VALIDATION)
 	final static String PROPERTY2=WekaConstants.NUM_CLUSTERS;
 
-	@ComponentProperty(description="Maximum number of iterations",
-			name = "max_num_iterations", defaultValue = "100")
+	@ComponentProperty(
+	description="Maximum number of iterations",
+	name = "max_num_iterations", 
+	defaultValue = "100")
 	final static String PROPERTY3=WekaConstants.MAX_NUM_ITERATIONS;
 
-	@ComponentProperty(description="Random number seed",
-			name = "rnd_seed", defaultValue = "100")
+	@ComponentProperty(
+	description="Random number seed",
+	name = "rnd_seed", 
+	defaultValue = "100")
 	final static String PROPERTY4=WekaConstants.RND_SEED;
 
-	@ComponentProperty(description="Minimum allowable standard deviation",
-			name="std_dev", defaultValue=".000001")
+	@ComponentProperty(
+	description="Minimum allowable standard deviation",
+	name="std_dev", 
+	defaultValue=".000001")
 	final static String PROPERTY5=WekaConstants.STD_DEV;
 	
 
 	//OUTPUT
-	@ComponentOutput(description="The generated model", name=WekaConstants.MODEL)
+	@ComponentOutput(
+	description="The generated model", 
+	name=WekaConstants.MODEL)
 	final String DATA_OUTPUT_1=WekaConstants.MODEL;
+	
+	/* The logger object to use for output. */
+	private static Logger logger = null;
+	
+	/* The debug flag.  If true, the component will log information useful for debugging. */
+	private static boolean debug = false;
 
 	public void dispose(ComponentContextProperties ccp)
 	{
-	   System.out.println("Disposing WekaEMBuildClusterer...");
+	   logger.info("Disposing WekaEMBuildClusterer...");
 	}
 
 	/*
@@ -81,20 +169,18 @@ public class WekaEMBuildClusterer implements ExecutableComponent
 	public void execute(ComponentContext cc)
 	throws ComponentExecutionException, ComponentContextException
 	{
-		System.out.println("Firing WekaEMBuildClusterer...");
+		logger.info("Firing WekaEMBuildClusterer...");
 		try
 		{
 			Instances instances = (Instances)(cc.getDataComponentFromInput(WekaConstants.INSTANCES));
 
 			// Process user-selected options
 			// Debug property
-			boolean debug = false;
 			String verbose = cc.getProperty(PROPERTY1);
 			if (verbose.compareToIgnoreCase("Y") == 0)
 			{
-				System.out.println("EM Instances: ");
-				System.out.println(instances);
 				debug = true;
+				logger.info("EM Instances: "+instances);
 			}
 
 			// Number of clusters
@@ -126,35 +212,44 @@ public class WekaEMBuildClusterer implements ExecutableComponent
 			clusterer.setDebug(debug);
 			clusterer.buildClusterer(instances);
 
-			if (verbose.compareToIgnoreCase("Y") == 0)
+			//if (verbose.compareToIgnoreCase("Y") == 0)
+			if (debug == true)
 			{
-                System.out.println("Options: "+clusterer.getOptions());
-                System.out.println("String cluster representation: ");
-                System.out.println(clusterer.toString());
-                System.out.println("Rnd seed: "+clusterer.getSeed());
-                System.out.println("Min std dev: "+clusterer.getMinStdDev());
-                System.out.println("Num clusters: "+clusterer.getNumClusters());
-                System.out.println("Max iterations: "+clusterer.getMaxIterations());
+                logger.info("Options: "+clusterer.getOptions());
+                logger.info("String cluster representation: "+clusterer.toString());
+                logger.info("Rnd seed: "+clusterer.getSeed());
+                logger.info("Min std dev: "+clusterer.getMinStdDev());
+                logger.info("Num clusters: "+clusterer.getNumClusters());
+                logger.info("Max iterations: "+clusterer.getMaxIterations());
 			}
 
 			cc.pushDataComponentToOutput(DATA_OUTPUT_1, clusterer);
 		}
 		catch (ComponentContextException ex1)
 		{
-			ex1.printStackTrace();
+			if (debug == true)
+			{
+			  ex1.printStackTrace();
+			}
+			logger.severe("Error in WekaEMBuildClusterer: "+ex1.getMessage());
 			throw new ComponentContextException("Error in WekaEMBuildClusterer: "+ex1.getMessage());
 		}
 		catch (Throwable th)
 		{
 			// Classify everything else as ComponentExecutionException
-			th.printStackTrace();
+			if (debug == true)
+			{
+			  th.printStackTrace();
+			}
+			logger.severe("Error in WekaEMBuildClusterer: "+th.getMessage());
 			throw new ComponentExecutionException("Error in WekaEMBuildClusterer: "+th.getMessage());
 		}
 	}
 
 	public void initialize(ComponentContextProperties ccp)
 	{
-		System.out.println("Initializing WekaEMBuildClusterer...");
+		logger = ccp.getLogger();
+		logger.info("Initializing WekaEMBuildClusterer...");
 	}
 }
 
