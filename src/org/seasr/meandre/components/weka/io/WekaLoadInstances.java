@@ -38,7 +38,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
  */
 
-package org.seasr.meandre.components.weka;
+package org.seasr.meandre.components.weka.io;
 
 import java.io.File;
 import java.io.FileOutputStream;
