@@ -40,7 +40,7 @@
  *
  */
 
-package org.meandre.components.io;
+package org.seasr.meandre.components.weka.viz;
 
 import gnu.formj.html.*;
 import gnu.formj.dhtml.*;
@@ -70,7 +70,6 @@ import org.meandre.annotations.ComponentInput;
 
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 /**
  * <p>

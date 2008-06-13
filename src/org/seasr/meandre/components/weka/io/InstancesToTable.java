@@ -40,7 +40,7 @@
  *
  */
 
-package org.meandre.components.io;
+package org.seasr.meandre.components.weka.io;
 
 import org.meandre.core.ComponentContext;
 import org.meandre.core.ComponentContextException;
@@ -56,7 +56,6 @@ import org.meandre.annotations.ComponentProperty;
 import weka.core.Instances;
 import weka.core.Instance;
 import weka.core.Attribute;
-import weka.core.converters.ConverterUtils.DataSource;
 
 import ncsa.d2k.modules.core.datatype.table.*;
 import ncsa.d2k.modules.core.datatype.table.basic.StringColumn;
