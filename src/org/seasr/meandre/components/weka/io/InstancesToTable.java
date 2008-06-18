@@ -57,10 +57,11 @@ import weka.core.Instances;
 import weka.core.Instance;
 import weka.core.Attribute;
 
-import ncsa.d2k.modules.core.datatype.table.*;
-import ncsa.d2k.modules.core.datatype.table.basic.StringColumn;
-import ncsa.d2k.modules.core.datatype.table.basic.FloatColumn;
-import ncsa.d2k.modules.core.datatype.table.basic.MutableTableImpl;
+import org.meandre.components.datatype.table.*;
+import org.meandre.components.datatype.table.Column;
+import org.meandre.components.datatype.table.basic.StringColumn;
+import org.meandre.components.datatype.table.basic.FloatColumn;
+import org.meandre.components.datatype.table.basic.MutableTableImpl;
 
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -102,7 +103,7 @@ public class InstancesToTable implements ExecutableComponent {
                     name= "instances")
     public final static String DATA_INPUT = "instances";
 
-    @ComponentOutput(description="Output ncsa.d2k.modules.core.datatype.table.Table converted from weka.core.Instances.",
+    @ComponentOutput(description="Output org.meandre.components.datatype.table.Table converted from weka.core.Instances.",
                      name="table")
     public final static String DATA_OUTPUT = "table";
 
