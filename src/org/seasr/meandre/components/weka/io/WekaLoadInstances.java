@@ -45,10 +45,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import org.meandre.core.ComponentContext;
 import org.meandre.core.ComponentContextException;
@@ -103,6 +103,11 @@ public class WekaLoadInstances implements ExecutableComponent {
 	name = "instances")
 	public final static String DATA_OUTPUT_INSTANCES = "instances";
 
+	@ComponentOutput(
+			description = "Just the filename of the file.", 
+			name = "filename")
+			public final static String DATA_OUTPUT_FILENAME = "filename";
+
 	@ComponentProperty(
 	description = "Print instances? (Y/N)",
 	name = "printInstances", 
@@ -110,7 +115,7 @@ public class WekaLoadInstances implements ExecutableComponent {
 	public final static String DATA_PROPERTY_PRINTINSTANCES = "printInstances";
 
 	/* The logger object to use for output. */
-	private static Logger logger = null;
+	private static PrintStream logger = null;
 	
  
 	/** 
@@ -118,8 +123,8 @@ public class WekaLoadInstances implements ExecutableComponent {
      **/	
 	public void initialize(ComponentContextProperties ccp) 
 	{
-		logger = ccp.getLogger();
-		logger.info("Initializing WekaEMBuildClusterer...");
+		logger = ccp.getOutputConsole();
+		logger.println("Initializing WekaLoadInstances...");
 	}
 
     /** 
@@ -145,6 +150,8 @@ public class WekaLoadInstances implements ExecutableComponent {
 
 		// Check whether the input in a URL
 		URL url = null;
+		String fileName = null;
+    	
 		try {
 			url = new URL(inputURL);
 		}
@@ -154,10 +161,9 @@ public class WekaLoadInstances implements ExecutableComponent {
 		if (url != null) {
 			if (inputURL.toLowerCase().endsWith(".csv")) 
 			{
-				logger.info("WekaLoadInstances: Detected a URL CSV file");
+				logger.println("WekaLoadInstances: Detected a URL CSV file");
 
 				// Get the file name referenced by the URL
-		    	String fileName = null;
 		    	StringTokenizer st = new StringTokenizer(url.getFile(), File.separator);
 		    	while (st.hasMoreTokens())
 		    		fileName = st.nextToken();
@@ -173,11 +179,11 @@ public class WekaLoadInstances implements ExecutableComponent {
 		    	}
 		    	catch (IOException e) 
 		    	{
-		    		logger.severe("WekaLoadInstances:  Cannot create temporaru file. "+e.getMessage());
+		    		logger.println("WekaLoadInstances:  Cannot create temporary file. "+e.getMessage());
 		    		e.printStackTrace();
 		    	}
 
-		    	logger.info("WekaLoadInstances: Copying data from '" + inputURL +
+		    	logger.println("WekaLoadInstances: Copying data from '" + inputURL +
 	    				"' to '" + localTempFile.getAbsolutePath() + "'");
 
 	    	   	// Copy the URL stream to the output stream
@@ -199,10 +205,11 @@ public class WekaLoadInstances implements ExecutableComponent {
 
 			if (printInstances) {
 				// Print header and instances.
-				logger.info("\nDataset:\n"+instances);
+				logger.println("\nDataset:\n"+instances);
 			}
 
 			context.pushDataComponentToOutput(DATA_OUTPUT_INSTANCES, instances);
+			context.pushDataComponentToOutput(DATA_OUTPUT_FILENAME, fileName);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -225,7 +232,7 @@ public class WekaLoadInstances implements ExecutableComponent {
     	}
     	catch (IOException e) 
     	{
-    		logger.severe("WekaLoadInstances: Cannot copy data from URL! \n"+e.getMessage());
+    		logger.println("WekaLoadInstances: Cannot copy data from URL! \n"+e.getMessage());
     	}
     	finally {
     		try {
@@ -241,7 +248,7 @@ public class WekaLoadInstances implements ExecutableComponent {
      **/
 	public void dispose(ComponentContextProperties ccp) 
 	{
-	   logger.info("Disposing WekaEMBuildClusterer...");
+	   logger.println("Disposing WekaLoadInstances...");
 	}
 }
 

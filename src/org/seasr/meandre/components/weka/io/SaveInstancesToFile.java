@@ -50,7 +50,6 @@ import org.meandre.core.ExecutableComponent;
 import org.meandre.annotations.Component;
 import org.meandre.annotations.ComponentInput;
 import org.meandre.annotations.ComponentOutput;
-import org.meandre.annotations.ComponentProperty;
 import org.meandre.core.ComponentContextProperties;
 
 import weka.core.Instances;
@@ -100,13 +99,12 @@ public class SaveInstancesToFile implements ExecutableComponent {
                      name="message")
     final static String DATA_OUTPUT = "message";
 
-    @ComponentProperty(defaultValue="null",
-                       description="Import local file name where you want to save the instnaces.",
-                       name="message")
-    final static String DATA_PROPERTY = "message";
+    @ComponentInput(description="Input the local filename where you want to save the instances.",
+                       name="filename")
+    final static String DATA_INPUT_FILENAME = "filename";
 
     /** store file name */
-    String message = null;
+    String filename = null;
     /** store output handle */
     PrintWriter out = null;
 
@@ -129,18 +127,17 @@ public class SaveInstancesToFile implements ExecutableComponent {
             throws ComponentExecutionException, ComponentContextException {
         try {
             Instances instances = (Instances)(cc.getDataComponentFromInput(DATA_INPUT));
-            int nr_instances = instances.numInstances();
             int nr_attributes = instances.numAttributes();
 
-            message = cc.getProperty(DATA_PROPERTY);
-            if(message == null)
+            filename = (String)cc.getDataComponentFromInput(DATA_INPUT_FILENAME);
+            if(filename == null)
                 throw new org.meandre.core.ComponentExecutionException();
 
-            out = new PrintWriter(new BufferedWriter(new FileWriter(message)));
+            out = new PrintWriter(new BufferedWriter(new FileWriter(filename)));
             if(out == null)
                 throw new org.meandre.core.ComponentExecutionException();
 
-            Enumeration all_attributes = instances.enumerateAttributes(),
+            Enumeration<?> all_attributes = instances.enumerateAttributes(),
                         all_instances  = instances.enumerateInstances();
 
             int nr = 0;
@@ -163,7 +160,7 @@ public class SaveInstancesToFile implements ExecutableComponent {
             out.flush();
             out.close();
 
-            cc.pushDataComponentToOutput(DATA_OUTPUT, message);
+            cc.pushDataComponentToOutput(DATA_OUTPUT, filename);
         } catch (Exception e1) {
             throw new ComponentExecutionException(e1);
         }
@@ -175,6 +172,5 @@ public class SaveInstancesToFile implements ExecutableComponent {
     * @param ccp ComponentContextProperties
     */
    public void dispose(ComponentContextProperties ccp) {
-       // TODO Auto-generated method stub
    }
 }
